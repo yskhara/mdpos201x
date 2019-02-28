@@ -25,12 +25,15 @@ void MotorCtrl::Control(void)
     if (this->shutdown)
     {
         // disable gate drivers
-        GPIOB->BSRR = GPIO_BSRR_BR15;
+        //GPIOB->BSRR = GPIO_BSRR_BR15;
+        TIM1->BDTR &= ~TIM_BDTR_MOE;
         TIM1->CCR1 = 0;
         TIM1->CCR2 = 0;
 
         // turn red led on, yellow off
-        GPIOB->BSRR = GPIO_BSRR_BS2 | GPIO_BSRR_BR1;
+        //GPIOB->BSRR = GPIO_BSRR_BS2 | GPIO_BSRR_BR1;
+        GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
+        GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
 
         this->ResetState();
 
@@ -38,7 +41,9 @@ void MotorCtrl::Control(void)
     }
 
     // flash yellow led, red off
-    GPIOB->BSRR = GPIO_BSRR_BR2 | GPIO_BSRR_BS1;
+    //GPIOB->BSRR = GPIO_BSRR_BR2 | GPIO_BSRR_BS1;
+    GPIO_LED1->BSRR = GPIO_BSRR_BS_LED1;
+    GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
 
     double tmp_vel = (this->target_position_pulse - this->current_position_pulse) * Kh * Tc * Kv;
 

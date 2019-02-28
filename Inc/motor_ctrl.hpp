@@ -11,6 +11,8 @@
 #include "main.h"
 #include "SerialClass.hpp"
 
+#include "led.h"
+
 #include "conf.h"
 
 //#define IGNORE_EMS
@@ -29,7 +31,8 @@ public:
 
     inline void Shutdown(void)
     {
-        GPIOB->BSRR = GPIO_BSRR_BR15;
+        //GPIOB->BSRR = GPIO_BSRR_BR15;
+        TIM1->BDTR &= ~TIM_BDTR_MOE;
         TIM1->CCR1 = 0;
         TIM1->CCR2 = 0;
 
@@ -51,7 +54,8 @@ public:
             TIM1->CCR2 = 0;
             this->ResetState();
 
-            GPIOB->BSRR = GPIO_BSRR_BS15;
+            //GPIOB->BSRR = GPIO_BSRR_BS15;
+            TIM1->BDTR |= TIM_BDTR_MOE;
 
             this->shutdown = false;
         }
