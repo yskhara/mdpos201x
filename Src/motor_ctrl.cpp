@@ -1,0 +1,164 @@
+/*
+ * motor_ctrl.cpp
+ *
+ *  Created on: Dec 23, 2018
+ *      Author: yusaku
+ */
+
+#include "motor_ctrl.hpp"
+
+void MotorCtrl::Control(void)
+{
+    this->pulse = static_cast<int16_t>(TIM2->CNT);
+    TIM2->CNT = 0;
+    this->current_position_pulse += pulse;
+
+#ifdef IGNORE_EMS
+#warning "ignore me if you know what you are doing."
+#else
+    if ((GPIOC->IDR & GPIO_IDR_IDR14) == 0)
+    {
+        this->Shutdown();
+    }
+#endif
+
+    if (this->shutdown)
+    {
+        // disable gate drivers
+        GPIOB->BSRR = GPIO_BSRR_BR15;
+        TIM1->CCR1 = 0;
+        TIM1->CCR2 = 0;
+
+        // turn red led on, yellow off
+        GPIOB->BSRR = GPIO_BSRR_BS2 | GPIO_BSRR_BR1;
+
+        this->ResetState();
+
+        return;
+    }
+
+    // flash yellow led, red off
+    GPIOB->BSRR = GPIO_BSRR_BR2 | GPIO_BSRR_BS1;
+
+    double tmp_vel = (this->target_position_pulse - this->current_position_pulse) * Kh * Tc * Kv;
+
+    // limit target velocity
+    if (MaximumVelocity < tmp_vel)
+    {
+        this->target_velocity = MaximumVelocity;
+    }
+    else if (tmp_vel < -MaximumVelocity)
+    {
+        this->target_velocity = -MaximumVelocity;
+    }
+    else
+    {
+        this->target_velocity = tmp_vel;
+    }
+
+    this->velocity = pulse * Kh;
+
+    this->error_prev = this->error;
+    this->error = this->target_velocity - this->velocity;
+
+    this->u_p = Kp * (this->error - this->error_prev);
+    this->u_i = KiTc * this->error;
+
+    this->target_torque += (u_p + u_i);
+
+    // limit torque
+    if (MaximumTorque < target_torque)
+    {
+        target_torque = MaximumTorque;
+    }
+    else if (target_torque < -MaximumTorque)
+    {
+        target_torque = -MaximumTorque;
+    }
+
+    target_voltage = (target_torque * Kg) + (this->velocity * Ke);
+
+    if (MaximumVoltage < target_voltage)
+    {
+        target_voltage = MaximumVoltage;
+    }
+    else if (target_voltage < -MaximumVoltage)
+    {
+        target_voltage = -MaximumVoltage;
+    }
+
+    // apply output voltage
+    SetDuty(target_voltage * 1000 / MaximumVoltage);
+
+    GPIOB->BSRR = GPIO_BSRR_BR1;
+}
+
+void MotorCtrl::SetTarget(double target)
+{
+    int tmp = (target * Kr / (Kh * Tc)) + 0.5;
+
+    if (MaximumPosition_pulse < tmp)
+    {
+        this->target_position_pulse = MaximumPosition_pulse;
+    }
+    else if (tmp < -MaximumPosition_pulse)
+    {
+        this->target_position_pulse = -MaximumPosition_pulse;
+    }
+    else
+    {
+        this->target_position_pulse = tmp;
+    }
+}
+void MotorCtrl::ResetPosition(double offset)
+{
+    if(!this->shutdown)
+    {
+        return;
+    }
+
+    this->current_position_pulse = offset * Kh * Tc;
+    this->target_position_pulse = this->current_position_pulse;
+}
+
+void MotorCtrl::Print(void)
+{
+    char buf[128];
+    int ret = sprintf(buf, "%06lu,%+03d,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
+            this->current_position_pulse, this->target_position_pulse, this->velocity, this->target_velocity, this->error,
+            this->error_prev, this->u_p, this->u_i, this->target_torque, this->target_voltage);
+
+    if (ret < 0)
+    {
+        return;
+    }
+
+    serial.write((const uint8_t *) buf, ret);
+}
+
+void MotorCtrl::ReadConfig(void)
+{
+    this->Kp = confStruct.Kp;
+    this->KiTc = confStruct.KiTc;
+    this->Ke = confStruct.Ke;
+    this->Kg = confStruct.Kg;
+    this->Kh = confStruct.Kh;
+    this->Kr = confStruct.Kr;
+    this->MaximumVelocity = confStruct.MaxVel;
+    this->MaximumTorque = confStruct.MaxTrq;
+    this->SetSupplyVoltage(confStruct.Vsup);
+}
+
+void MotorCtrl::WriteConfig(void)
+{
+    confStruct.Kp = this->Kp;
+    confStruct.KiTc = this->KiTc;
+    confStruct.Ke = this->Ke;
+    confStruct.Kg = this->Kg;
+    confStruct.Kh = this->Kh;
+    confStruct.Kr = this->Kr;
+    confStruct.MaxVel = this->MaximumVelocity;
+    confStruct.MaxTrq = this->MaximumTorque;
+    confStruct.Vsup = this->SupplyVoltage;
+}
+
