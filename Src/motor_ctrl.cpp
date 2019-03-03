@@ -9,29 +9,27 @@
 
 void MotorCtrl::Control(void)
 {
-    this->pulse = static_cast<int16_t>(TIM2->CNT);
+    int pulse = -static_cast<int16_t>(TIM2->CNT);
     TIM2->CNT = 0;
-    this->current_position_pulse += pulse;
 
-#ifdef IGNORE_EMS
-#warning "ignore me if you know what you are doing."
-#else
-    if ((GPIOC->IDR & GPIO_IDR_IDR14) == 0)
+#ifdef CTRL_POS
+    // update current position
+    this->current_position_pulse += pulse;
+#endif
+
+    if ((GPIO_EMS->IDR & GPIO_IDR_EMS) == 0)
     {
         this->Shutdown();
     }
-#endif
 
     if (this->shutdown)
     {
-        // disable gate drivers
-        //GPIOB->BSRR = GPIO_BSRR_BR15;
+        // disable master output
         TIM1->BDTR &= ~TIM_BDTR_MOE;
         TIM1->CCR1 = 0;
         TIM1->CCR2 = 0;
 
         // turn red led on, yellow off
-        //GPIOB->BSRR = GPIO_BSRR_BS2 | GPIO_BSRR_BR1;
         GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
         GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
 
@@ -41,13 +39,22 @@ void MotorCtrl::Control(void)
     }
 
     // flash yellow led, red off
-    //GPIOB->BSRR = GPIO_BSRR_BR2 | GPIO_BSRR_BS1;
     GPIO_LED1->BSRR = GPIO_BSRR_BS_LED1;
     GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
 
-    double tmp_vel = (this->target_position_pulse - this->current_position_pulse) * Kh * Tc * Kv;
+#ifdef CTRL_POS
+    double tmp_vel;
 
-    // limit target velocity
+    if (this->homing)
+    {
+        tmp_vel = this->HomingVelocity;
+    }
+    else
+    {
+        tmp_vel = (this->target_position_pulse - this->current_position_pulse) * Kh * Tc * Kv;
+    }
+
+// limit target velocity
     if (MaximumVelocity < tmp_vel)
     {
         this->target_velocity = MaximumVelocity;
@@ -60,6 +67,7 @@ void MotorCtrl::Control(void)
     {
         this->target_velocity = tmp_vel;
     }
+#endif
 
     this->velocity = pulse * Kh;
 
@@ -71,7 +79,7 @@ void MotorCtrl::Control(void)
 
     this->target_torque += (u_p + u_i);
 
-    // limit torque
+// limit torque
     if (MaximumTorque < target_torque)
     {
         target_torque = MaximumTorque;
@@ -92,14 +100,15 @@ void MotorCtrl::Control(void)
         target_voltage = -MaximumVoltage;
     }
 
-    // apply output voltage
+// apply output voltage
     SetDuty(target_voltage * 1000 / MaximumVoltage);
 
-    GPIOB->BSRR = GPIO_BSRR_BR1;
+    GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
 }
 
 void MotorCtrl::SetTarget(double target)
 {
+#ifdef CTRL_POS
     int tmp = (target * Kr / (Kh * Tc)) + 0.5;
 
     if (MaximumPosition_pulse < tmp)
@@ -114,10 +123,28 @@ void MotorCtrl::SetTarget(double target)
     {
         this->target_position_pulse = tmp;
     }
+#else
+    double tmp = target * Kr;
+
+    if (MaximumVelocity < tmp)
+    {
+        this->target_velocity = MaximumVelocity;
+    }
+    else if (tmp < -MaximumVelocity)
+    {
+        this->target_velocity = -MaximumVelocity;
+    }
+    else
+    {
+        this->target_velocity = tmp;
+    }
+#endif
 }
+
+#ifdef CTRL_POS
 void MotorCtrl::ResetPosition(double offset)
 {
-    if(!this->shutdown)
+    if (!this->shutdown)
     {
         return;
     }
@@ -126,12 +153,57 @@ void MotorCtrl::ResetPosition(double offset)
     this->target_position_pulse = this->current_position_pulse;
 }
 
+
+void MotorCtrl::LimitSwitch0Handler(void)
+{
+    if(!this->homing)
+    {
+        return;
+    }
+
+    this->Shutdown();
+    this->ResetPosition();
+}
+
+void MotorCtrl::LimitSwitch1Handler(void)
+{
+    if(!this->homing)
+    {
+        return;
+    }
+
+    this->Shutdown();
+    this->ResetPosition();
+}
+
+void MotorCtrl::Home(void)
+{
+    if(((GPIO_DIN0->IDR & GPIO_IDR_DIN0) == 0))// || ((GPIO_DIN1->IDR & GPIO_IDR_DIN1) == 0))
+    {
+        this->Shutdown();
+        this->ResetPosition();
+        return;
+    }
+
+    this->homing = true;
+    this->Recover();
+}
+
+#endif
+
 void MotorCtrl::Print(void)
 {
     char buf[128];
-    int ret = sprintf(buf, "%06lu,%+03d,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
+    int ret;
+#ifdef CTRL_POS
+    ret = sprintf(buf, "%06lu,%+03d,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
             this->current_position_pulse, this->target_position_pulse, this->velocity, this->target_velocity, this->error,
             this->error_prev, this->u_p, this->u_i, this->target_torque, this->target_voltage);
+#else
+    ret = sprintf(buf, "%06lu,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
+            this->pulse, this->velocity, this->target_velocity, this->error, this->error_prev, this->u_p, this->u_i,
+            this->target_torque, this->target_voltage);
+#endif
 
     if (ret < 0)
     {

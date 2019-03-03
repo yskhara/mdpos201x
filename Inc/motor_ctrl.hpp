@@ -15,8 +15,6 @@
 
 #include "conf.h"
 
-//#define IGNORE_EMS
-
 extern SerialClass serial;
 
 class MotorCtrl
@@ -37,18 +35,14 @@ public:
         TIM1->CCR2 = 0;
 
         this->shutdown = true;
+        this->homing = false;
 
         this->ResetState();
     }
 
     inline void Recover(void)
     {
-#ifdef IGNORE_EMS
-#warning "ignore me if you know what you are doing."
-        if (true)
-#else
-        if ((GPIOC->IDR & GPIO_IDR_IDR14) != 0)
-#endif
+        if ((GPIO_EMS->IDR & GPIO_IDR_EMS) != 0)
         {
             TIM1->CCR1 = 0;
             TIM1->CCR2 = 0;
@@ -63,6 +57,15 @@ public:
 
     void ReadConfig(void);
     void WriteConfig(void);
+
+    void LimitSwitch0Handler(void);
+    void LimitSwitch1Handler(void);
+
+    void Home(void);
+    inline bool IsHoming(void)
+    {
+        return this->homing;
+    }
 
 private:
 
@@ -105,13 +108,16 @@ private:
         this->u_p = 0;
         this->u_i = 0;
 
+#ifdef CTRL_POS
         this->target_position_pulse = this->current_position_pulse;
+#endif
         this->target_velocity = 0;
         this->target_torque = 0;
         this->target_voltage = 0;
     }
 
     bool shutdown = true;
+    bool homing = false;
 
     int pulse = 0;
     double velocity = 0;                            // current velocity in [rad/s]
@@ -122,8 +128,10 @@ private:
     double u_p = 0;
     double u_i = 0;
 
+#ifdef CTRL_POS
     int current_position_pulse = 0;
     int target_position_pulse = 0;
+#endif
 
     double target_velocity = 0;                     // target angular velocity [rad/sec]
     double target_torque = 0;                       // target torque [N.m]
@@ -157,6 +165,9 @@ private:
     double MaximumVoltage = 22;                     // デューティ100%のときの出力電圧で，電圧制限を定める．
 
     double SupplyVoltage = 24;
+
+    double HomingVelocity = 1;                      // ホーミングの際の速度．
+                                                     // TODO: UARTから変更できるようにする
 
 public:
 

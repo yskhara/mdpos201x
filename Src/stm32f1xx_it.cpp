@@ -225,6 +225,32 @@ extern "C"
     /******************************************************************************/
 
     /**
+     * @brief This function handles EXTI line2 interrupt.
+     */
+    void EXTI2_IRQHandler(void)
+    {
+        if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_2) != RESET)
+        {
+            LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_2);
+
+            control.LimitSwitch0Handler();
+        }
+    }
+
+    /**
+     * @brief This function handles EXTI line3 interrupt.
+     */
+    void EXTI3_IRQHandler(void)
+    {
+        if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_3) != RESET)
+        {
+            LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
+
+            control.LimitSwitch1Handler();
+        }
+    }
+
+    /**
      * @brief This function handles USB low priority or CAN RX0 interrupts.
      */
     void USB_LP_CAN1_RX0_IRQHandler(void)
@@ -240,7 +266,7 @@ extern "C"
 
     void TIM1_UP_IRQHandler(void)
     {
-        if((TIM1->SR & TIM_SR_UIF) != RESET)
+        if ((TIM1->SR & TIM_SR_UIF) != RESET)
         {
             TIM1->SR = ~TIM_SR_UIF;
 
@@ -255,7 +281,7 @@ extern "C"
      */
     void TIM3_IRQHandler(void)
     {
-        if((TIM3->SR & TIM_SR_UIF) != RESET)
+        if ((TIM3->SR & TIM_SR_UIF) != RESET)
         {
             TIM3->SR = ~TIM_SR_UIF;
 
@@ -264,19 +290,19 @@ extern "C"
     }
 
     /**
-    * @brief This function handles DMA1 channel4 global interrupt.
-    */
+     * @brief This function handles DMA1 channel4 global interrupt.
+     */
     void DMA1_Channel4_IRQHandler(void)
     {
-      HAL_DMA_IRQHandler(&hdma_usart1_tx);
+        HAL_DMA_IRQHandler(&hdma_usart1_tx);
     }
 
     /**
-    * @brief This function handles DMA1 channel5 global interrupt.
-    */
+     * @brief This function handles DMA1 channel5 global interrupt.
+     */
     void DMA1_Channel5_IRQHandler(void)
     {
-      HAL_DMA_IRQHandler(&hdma_usart1_rx);
+        HAL_DMA_IRQHandler(&hdma_usart1_rx);
     }
 
     void USART1_IRQHandler(void)

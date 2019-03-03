@@ -1,6 +1,6 @@
 #include "stm32f1xx_hal.h"
 #include "main.h"
-#include "can.h"
+#include "can.hpp"
 #include "led.h"
 #include "conf.h"
 #include "motor_ctrl.hpp"
@@ -13,23 +13,8 @@ enum can_bus_state bus_state;
 CAN_RxHeaderTypeDef rx_header;
 uint8_t rx_data[8];
 
-#define CAN_MTU 8
-
-template<typename T>
-union _Encapsulator
-{
-    T data;
-    uint64_t i;
-};
-
-template<typename T>
-static void can_unpack(const uint8_t (&buf)[CAN_MTU], T &data);
-template<typename T>
-static void can_pack(uint8_t (&buf)[CAN_MTU], const T data);
-
 static constexpr uint16_t cmd_shutdown = 0x0000;
 static constexpr uint16_t cmd_recover = 0x0001;
-static constexpr uint16_t cmd_rstpos = 0x0010;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -57,9 +42,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             case cmd_recover:
                 control.Recover();
                 break;
-            case cmd_rstpos:
-                control.ResetPosition();
-                break;
             default:
                 break;
         }
@@ -75,35 +57,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
 
     led_process();
-}
-
-// unpacks can payload
-template<typename T>
-void can_unpack(const uint8_t (&buf)[CAN_MTU], T &data)
-{
-    _Encapsulator<T> _e;
-
-    for (int i = 0; i < sizeof(T); i++)
-    {
-        _e.i = (_e.i << 8) | (uint64_t) (buf[i]);
-    }
-
-    data = _e.data;
-}
-
-// packs can payload
-template<typename T>
-void can_pack(uint8_t (&buf)[CAN_MTU], const T data)
-{
-    _Encapsulator<T> _e;
-    _e.data = data;
-
-    for (int i = sizeof(T); i > 0;)
-    {
-        i--;
-        buf[i] = _e.i & 0xff;
-        _e.i >>= 8;
-    }
 }
 
 void can_init(void)
