@@ -15,6 +15,7 @@ uint8_t rx_data[8];
 
 static constexpr uint16_t cmd_shutdown = 0x0000;
 static constexpr uint16_t cmd_recover = 0x0001;
+static constexpr uint16_t cmd_home = 0x0010;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -41,6 +42,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
                 break;
             case cmd_recover:
                 control.Recover();
+                break;
+            case cmd_home:
+                control.Home();
                 break;
             default:
                 break;

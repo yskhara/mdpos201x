@@ -178,6 +178,11 @@ void MotorCtrl::LimitSwitch1Handler(void)
 
 void MotorCtrl::Home(void)
 {
+    if(!this->shutdown)
+    {
+        return;
+    }
+
     if(((GPIO_DIN0->IDR & GPIO_IDR_DIN0) == 0))// || ((GPIO_DIN1->IDR & GPIO_IDR_DIN1) == 0))
     {
         this->Shutdown();

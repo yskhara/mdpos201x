@@ -112,7 +112,7 @@ void HAL_MspInit(void)
     /* PendSV_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
     /* SysTick_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 1);
 
     /**NOJTAG: JTAG-DP Disabled and SW-DP Enabled
      */
@@ -164,7 +164,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
         ;
 
         /* CAN1 interrupt Init */
-        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 2);
+        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
         /* USER CODE BEGIN CAN1_MspInit 1 */
 
@@ -268,7 +268,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
         /* USER CODE BEGIN USART1_MspInit 1 */
 
-        HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(USART1_IRQn, 1, 1);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
 
         /* USER CODE END USART1_MspInit 1 */

@@ -26,7 +26,7 @@
  extern "C" {
 #endif
 
-#define LED_DURATION 10
+#define LED_DURATION 25
 
 #define LED_STAT_ON_DUR 1900
 #define LED_STAT_OFF_DUR 100

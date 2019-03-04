@@ -60,7 +60,7 @@ static void MX_ADC2_Init(void);
 MotorCtrl control;
 extern SerialClass serial;
 
-#define SQUARE_TEST
+//#define SQUARE_TEST
 
 //#define BROADCAST_EMS
 
@@ -251,10 +251,11 @@ int main(void)
 #ifndef SQUARE_TEST
 
 #ifdef BROADCAST_EMS
-        if(HAL_GetTick() - last_ems_time > ems_interval)
+        if(HAL_GetTick() - last_stat_time > stat_interval)
         {
             uint16_t data = 0xaabb;
 
+            /*
             if((GPIOC->IDR & GPIO_IDR_IDR14) != 0)
             {
                 data = 0x0001;
@@ -264,6 +265,7 @@ int main(void)
             {
                 //GPIOB->BSRR = GPIO_BSRR_BR2;
             }
+            */
 
             CAN_TxHeaderTypeDef tx_header;
             uint8_t tx_payload[CAN_MTU];
@@ -278,7 +280,7 @@ int main(void)
 
             can_tx(&tx_header, tx_payload);
 
-            last_ems_time = HAL_GetTick();
+            last_stat_time = HAL_GetTick();
         }
 #endif
         uart_process();
@@ -688,7 +690,7 @@ static void MX_TIM3_Init(void)
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
     /* TIM3 interrupt Init */
-    NVIC_SetPriority(TIM3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0));
+    NVIC_SetPriority(TIM3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     NVIC_EnableIRQ(TIM3_IRQn);
 
     TIM_InitStruct.Prescaler = 72 - 1;
