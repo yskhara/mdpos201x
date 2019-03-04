@@ -9,3 +9,5 @@
 /parser.log
 /parser_c.log
 /parser_cpp.log
+!/Debug/mdpos201x.*
+
