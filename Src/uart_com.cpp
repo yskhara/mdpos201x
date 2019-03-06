@@ -107,7 +107,7 @@ void uart_process(void)
     }
 
     //char tx_buf[128];
-    const char * inv_msg = "Invalid value for";
+    //const char * inv_msg = "Invalid value for";
 
     if (strcmp(cmd, "SCID") == 0)
     {
@@ -120,7 +120,7 @@ void uart_process(void)
     else if (strcmp(cmd, "GCID") == 0)
     {
         // get CAN standard identifier for command
-        int ret = sprintf(tx_buf, "Set CAN ID (cmd): 0x%x\r\n", confStruct.can_id_cmd);
+        int ret = sprintf(tx_buf, "Current CAN ID (cmd): 0x%x\r\n", confStruct.can_id_cmd);
         serial.write((const uint8_t *) tx_buf, ret);
     }
     else if (strcmp(cmd, "SVID") == 0)
@@ -134,15 +134,21 @@ void uart_process(void)
     else if (strcmp(cmd, "GVID") == 0)
     {
         // get CAN standard identifier for velocity command
-        int ret = sprintf(tx_buf, "Set CAN ID (vel): 0x%x\r\n", confStruct.can_id_vel);
+        int ret = sprintf(tx_buf, "Current CAN ID (vel): 0x%x\r\n", confStruct.can_id_vel);
         serial.write((const uint8_t *) tx_buf, ret);
     }
     else if (strcmp(cmd, "SSID") == 0)
     {
         // set CAN standard identifier for status broadcast
-        uint16_t can_stat_id = static_cast<uint16_t>(payload);
+        confStruct.can_id_stat = static_cast<uint16_t>(payload);
 
-        int ret = sprintf(tx_buf, "Set CAN ID (stat): %d\r\n", can_stat_id);
+        int ret = sprintf(tx_buf, "Set CAN ID (stat): 0x%x\r\n", confStruct.can_id_stat);
+        serial.write((const uint8_t *) tx_buf, ret);
+    }
+    else if (strcmp(cmd, "GSID") == 0)
+    {
+        // set CAN standard identifier for status broadcast
+        int ret = sprintf(tx_buf, "Current CAN ID (stat): 0x%x\r\n", confStruct.can_id_stat);
         serial.write((const uint8_t *) tx_buf, ret);
     }
     else if (strcmp(cmd, "SKPR") == 0)
@@ -277,6 +283,25 @@ void uart_process(void)
     {
         // get maximum velocity
         uart_dump_value("Omega_max", "rad/s", control.GetMaximumVelocity());
+    }
+    else if (strcmp(cmd, "SHVL") == 0)
+    {
+        // set homing velocity
+        int ret = control.SetHomingVelocity(payload);
+
+        if (ret != 0)
+        {
+            uart_invalid_value("Omega_homing", payload);
+        }
+        else
+        {
+            uart_valid_value_set("Omega_homing", "rad/s", payload);
+        }
+    }
+    else if (strcmp(cmd, "GHVL") == 0)
+    {
+        // get homing velocity
+        uart_dump_value("Omega_homing", "rad/s", control.GetHomingVelocity());
     }
     else if (strcmp(cmd, "SMTQ") == 0)
     {

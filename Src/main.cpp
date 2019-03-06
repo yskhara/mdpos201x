@@ -209,10 +209,8 @@ int main(void)
         uart_prompt();
     }
 
-#ifdef BROADCAST_EMS
     uint32_t last_stat_time = HAL_GetTick();
     uint32_t stat_interval = 100;
-#endif
 
 #ifdef SQUARE_TEST
     while ((GPIO_EMS->IDR & GPIO_IDR_EMS) == 0)
@@ -250,7 +248,6 @@ int main(void)
 
 #ifndef SQUARE_TEST
 
-#ifdef BROADCAST_EMS
         if(HAL_GetTick() - last_stat_time > stat_interval)
         {
             uint16_t data = 0xaabb;
@@ -273,16 +270,16 @@ int main(void)
 
             tx_header.IDE = CAN_ID_STD;
             tx_header.RTR = CAN_RTR_DATA;
-            tx_header.StdId = 0x4a0;
-            tx_header.DLC = 2;
+            tx_header.StdId = confStruct.can_id_stat;
+            tx_header.DLC = 4;
 
-            can_pack(tx_payload, data);
+            can_pack(tx_payload, static_cast<float>(control.GetCurrentVelocity()));
 
             can_tx(&tx_header, tx_payload);
 
             last_stat_time = HAL_GetTick();
         }
-#endif
+
         uart_process();
         led_process();
         //HAL_Delay(1);

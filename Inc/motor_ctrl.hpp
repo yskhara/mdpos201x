@@ -252,8 +252,9 @@ public:
     // coefficient: (unit of reference) -> [rad/s]
     inline int SetKr(double kr)
     {
-        if (kr < 0)
-            return -1;
+        // Kr is allowed to be negative value.
+        //if (kr < 0)
+        //    return -1;
 
         this->Kr = kr;
         return 0;
@@ -276,6 +277,20 @@ public:
     inline double GetMaximumVelocity(void)
     {
         return this->MaximumVelocity;
+    }
+
+    inline int SetHomingVelocity(double val)
+    {
+        if (val < 0)
+            return -1;
+
+        this->HomingVelocity = val;
+        return 0;
+    }
+
+    inline double GetHomingVelocity(void)
+    {
+        return this->HomingVelocity;
     }
 
     inline int SetMaximumTorque(double tm)
