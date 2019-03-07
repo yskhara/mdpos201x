@@ -13,9 +13,9 @@ enum can_bus_state bus_state;
 CAN_RxHeaderTypeDef rx_header;
 uint8_t rx_data[8];
 
-static constexpr uint16_t cmd_shutdown = 0x0000;
-static constexpr uint16_t cmd_recover = 0x0001;
-static constexpr uint16_t cmd_home = 0x0010;
+static constexpr uint8_t cmd_shutdown = 0x00;
+static constexpr uint8_t cmd_recover = 0x01;
+static constexpr uint8_t cmd_home = 0x10;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -32,7 +32,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
     if (rx_header.StdId == confStruct.can_id_cmd)
     {
-        uint16_t cmd;
+        uint8_t cmd;
         can_unpack(rx_payload, cmd);
 
         switch (cmd)
@@ -52,7 +52,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
     else if (rx_header.StdId == confStruct.can_id_vel)
     {
-        double vel_cmd;
+        float vel_cmd;
         can_unpack(rx_payload, vel_cmd);
         control.SetTarget(vel_cmd);
     }

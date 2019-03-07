@@ -210,7 +210,7 @@ int main(void)
     }
 
     uint32_t last_stat_time = HAL_GetTick();
-    uint32_t stat_interval = 100;
+    uint32_t stat_interval = 200;
 
 #ifdef SQUARE_TEST
     while ((GPIO_EMS->IDR & GPIO_IDR_EMS) == 0)
@@ -250,7 +250,7 @@ int main(void)
 
         if(HAL_GetTick() - last_stat_time > stat_interval)
         {
-            uint16_t data = 0xaabb;
+            //uint16_t data = 0xaabb;
 
             /*
             if((GPIOC->IDR & GPIO_IDR_IDR14) != 0)
@@ -266,7 +266,7 @@ int main(void)
 
             CAN_TxHeaderTypeDef tx_header;
             uint8_t tx_payload[CAN_MTU];
-            uint32_t status;
+            //uint32_t status;
 
             tx_header.IDE = CAN_ID_STD;
             tx_header.RTR = CAN_RTR_DATA;
