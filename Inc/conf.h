@@ -18,10 +18,10 @@ extern "C"
         uint16_t can_id_vel;
         uint16_t can_id_stat;
         double Kp;
-        double KiTc;
+        double Ki;
         double Ke;
         double Kg;
-        double Kh;
+        double Ppr;
         double Kr;
         double MaxVel;
         double MaxTrq;
@@ -34,5 +34,10 @@ extern ConfStruct confStruct;
 
 void readConf(void);
 void writeConf(void);
+
+inline ConfStruct * getConf(void)
+{
+    return &confStruct;
+}
 
 #endif /* CONF_H_ */

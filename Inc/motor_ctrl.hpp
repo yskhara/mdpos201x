@@ -11,9 +11,8 @@
 #include "main.h"
 #include "SerialClass.hpp"
 
-#include "led.h"
-
 #include "conf.h"
+#include "led.hpp"
 
 extern SerialClass serial;
 
@@ -39,11 +38,24 @@ public:
         this->shutdown = true;
         this->homing = false;
 
+        led::mode = led::lighting_mode::shutdown;
+
         this->ResetState();
     }
 
     inline void Recover(void)
     {
+        if(this->homing)
+        {
+            return;
+        }
+
+        _recover();
+    }
+
+    inline void _recover(void)
+    {
+
         if ((GPIO_EMS->IDR & GPIO_IDR_EMS) != 0)
         {
             TIM1->CCR1 = 0;
@@ -54,6 +66,8 @@ public:
             TIM1->BDTR |= TIM_BDTR_MOE;
 
             this->shutdown = false;
+
+            led::mode = led::lighting_mode::operational;
         }
     }
 
@@ -142,6 +156,7 @@ private:
     Float_Type Kr = 1.0;                                // 入力である速度指令を，[rad]に変換する係数．
                                                     // degで指令するなら， M_PI/180．rad/secで指令するなら 1．
 
+    Float_Type Ki = 0;
     Float_Type Kp = 0;                                  // 比例ゲイン
     Float_Type KiTc = 0;                                // 積分ゲインと制御周期の積
     Float_Type Tc = 0.001;                              // 制御周期 [sec]
@@ -150,7 +165,8 @@ private:
                                                       // 775, 385では40にした．
                                                         // 380では20にしてみたけど，もう少し低くても良さそう．
 
-    Float_Type Kh = 2 * M_PI / (2000 * Tc);             // エンコーダ入力[pulse/ctrl]を[rad/s]に変換する係数．kg / Tc．
+    Float_Type Ppr = 2000;
+    Float_Type Kh = 2 * M_PI / (Ppr * Tc);             // エンコーダ入力[pulse/ctrl]を[rad/s]に変換する係数．kg / Tc．
 
     //double Ra = 0.1384615;                          // 巻線抵抗 [Ohm]
     //double Kt = 0.0083762 * 24;                     // トルク定数 [N.m/A]
@@ -194,13 +210,14 @@ public:
         if (ki < 0)
             return -1;
 
+        this->Ki = ki;
         this->KiTc = ki * Tc;
         return 0;
     }
 
     inline Float_Type GetKi(void)
     {
-        return this->KiTc / Tc;
+        return this->Ki;
     }
 
     // emf constant
@@ -239,6 +256,7 @@ public:
         //if (ppr < 0)
         //    return -1;
 
+        this->Ppr = ppr;
         this->Kh = 2 * M_PI / (ppr * Tc);
 
         // TODO: make MaximumPosition_pulse configurable
@@ -248,7 +266,8 @@ public:
 
     inline Float_Type GetPPR(void)
     {
-        return 2 * M_PI / (this->Kh * Tc);
+        return this->Ppr;
+        //return 2 * M_PI / (this->Kh * Tc);
     }
 
     // coefficient: (unit of reference) -> [rad/s]
@@ -283,8 +302,8 @@ public:
 
     inline int SetHomingVelocity(Float_Type val)
     {
-        if (val < 0)
-            return -1;
+        //if (val < 0)
+        //    return -1;
 
         this->HomingVelocity = val;
         return 0;
@@ -327,6 +346,21 @@ public:
     inline Float_Type GetCurrentVelocity(void)
     {
         return this->velocity;
+    }
+
+    inline uint8_t GetStatusCode(void)
+    {
+        if(this->homing)
+        {
+            return 0x10;
+        }
+
+        if(this->shutdown)
+        {
+            return 0x00;
+        }
+
+        return 0x01;
     }
 };
 

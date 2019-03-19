@@ -30,8 +30,8 @@ void MotorCtrl::Control(void)
         TIM1->CCR2 = 0;
 
         // turn red led on, yellow off
-        GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
-        GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
+        //GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
+        //GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
 
         this->ResetState();
 
@@ -40,7 +40,7 @@ void MotorCtrl::Control(void)
 
     // flash yellow led, red off
     GPIO_LED1->BSRR = GPIO_BSRR_BS_LED1;
-    GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
+    //GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
 
 #ifdef CTRL_POS
     Float_Type tmp_vel;
@@ -186,11 +186,14 @@ void MotorCtrl::Home(void)
     {
         this->Shutdown();
         this->ResetPosition();
+        this->homing = false;
         return;
     }
 
     this->homing = true;
-    this->Recover();
+    this->_recover();
+
+    led::mode = led::lighting_mode::error_0;
 }
 
 #endif
@@ -221,10 +224,10 @@ void MotorCtrl::Print(void)
 void MotorCtrl::ReadConfig(void)
 {
     this->Kp = confStruct.Kp;
-    this->KiTc = confStruct.KiTc;
+    this->SetKi(confStruct.Ki);
     this->Ke = confStruct.Ke;
     this->Kg = confStruct.Kg;
-    this->Kh = confStruct.Kh;
+    this->SetPPR(confStruct.Ppr);
     this->Kr = confStruct.Kr;
     this->MaximumVelocity = confStruct.MaxVel;
     this->HomingVelocity = confStruct.HomVel;
@@ -235,10 +238,10 @@ void MotorCtrl::ReadConfig(void)
 void MotorCtrl::WriteConfig(void)
 {
     confStruct.Kp = this->Kp;
-    confStruct.KiTc = this->KiTc;
+    confStruct.Ki = this->Ki;
     confStruct.Ke = this->Ke;
     confStruct.Kg = this->Kg;
-    confStruct.Kh = this->Kh;
+    confStruct.Ppr = this->Ppr;
     confStruct.Kr = this->Kr;
     confStruct.MaxVel = this->MaximumVelocity;
     confStruct.HomVel = this->HomingVelocity;

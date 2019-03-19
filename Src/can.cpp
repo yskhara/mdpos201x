@@ -1,7 +1,7 @@
+#include <led.hpp>
 #include "stm32f1xx_hal.h"
 #include "main.h"
 #include "can.hpp"
-#include "led.h"
 #include "conf.h"
 #include "motor_ctrl.hpp"
 
@@ -30,7 +30,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         return;
     }
 
-    if (rx_header.StdId == confStruct.can_id_cmd)
+    /*
+    if ((rx_header.IDE != 0) || (rx_header.RTR != 0))
+    {
+        return;
+    }
+    */
+
+    if ((rx_header.StdId == can_id_cmd) && (rx_header.DLC == 1))
     {
         uint8_t cmd;
         can_unpack(rx_payload, cmd);
@@ -49,26 +56,53 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             default:
                 break;
         }
+
+        led::turn_on_can_led();
     }
-    else if (rx_header.StdId == confStruct.can_id_vel)
+    else if ((rx_header.StdId == can_id_vel) && (rx_header.DLC == 4))
     {
         float vel_cmd;
         can_unpack(rx_payload, vel_cmd);
         control.SetTarget(vel_cmd);
+
+        led::turn_on_can_led();
     }
     else
     {
+        led::process();
+        return;
     }
 
-    led_process();
+    led::process();
 }
+/*
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+    if ((hcan->ErrorCode & HAL_CAN_ERROR_BOF) != 0)
+    {
+
+    }
+}
+*/
 
 void can_init(void)
 {
     // default to 125 kbit/s
-    prescaler = 48;
+    prescaler = 18;
     hcan.Instance = CAN1;
     bus_state = OFF_BUS;
+
+    //can_id_cmd = confStruct.can_id_cmd;
+    //can_id_vel = can_id_cmd + 1;
+    //can_id_stat = can_id_cmd + 3;
+    //can_id_global = confStruct.can_id_global;
+}
+
+void can_read_conf(void)
+{
+    can_id_cmd = confStruct.can_id_cmd;
+    can_id_vel = confStruct.can_id_vel;
+    can_id_stat = confStruct.can_id_stat;
 }
 
 void can_set_filter(uint32_t id, uint32_t mask)
@@ -111,7 +145,7 @@ void can_enable(void)
         hcan.Init.TimeSeg1 = CAN_BS1_4TQ;
         hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
         hcan.Init.TimeTriggeredMode = DISABLE;
-        hcan.Init.AutoBusOff = DISABLE;
+        hcan.Init.AutoBusOff = ENABLE;
         hcan.Init.AutoWakeUp = DISABLE;
         hcan.Init.AutoRetransmission = ENABLE;
         hcan.Init.ReceiveFifoLocked = DISABLE;
@@ -215,7 +249,7 @@ uint32_t can_tx(CAN_TxHeaderTypeDef *tx_header, uint8_t (&buf)[CAN_MTU])
     uint32_t tx_mailbox;
     status = HAL_CAN_AddTxMessage(&hcan, tx_header, buf, &tx_mailbox);
 
-    led_on();
+    //led::turn_on_can_led();
     return status;
 }
 
@@ -228,7 +262,7 @@ uint32_t can_rx(CAN_RxHeaderTypeDef *rx_header, uint8_t (&buf)[CAN_MTU])
 
     status = HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, rx_header, buf);
 
-    led_on();
+    //led::turn_on_can_led();
     return status;
 }
 

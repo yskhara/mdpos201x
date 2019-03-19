@@ -8,13 +8,14 @@
 #ifndef UART_COM_HPP_
 #define UART_COM_HPP_
 
-
-
-void uart_process(void);
-void uart_prompt(void);
-void uart_dump_value(const char * name, const char * unit, double value);
-void uart_invalid_value(const char * name, double value);
-void uart_valid_value_set(const char * name, const char * unit, double value);
-
+namespace uart
+{
+    void process(void);
+    void prompt(void);
+    void dump_value(const char * name, const char * unit, double value);
+    void invalid_value(const char * name, double value);
+    void valid_value_set(const char * name, const char * unit, double value);
+    void dump_can_id(bool set);
+}
 
 #endif /* UART_COM_HPP_ */

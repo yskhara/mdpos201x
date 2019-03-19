@@ -24,11 +24,19 @@ enum can_bus_state {
 
 static const unsigned int CAN_MTU = 8;
 
+static uint16_t can_id_cmd = 0x0000;
+static uint16_t can_id_vel = 0x0000;
+//static uint16_t can_id_pos = 0x0000;
+static uint16_t can_id_stat = 0x0000;
+
+//static uint16_t can_id_global = 0x0000;
+
 void can_init(void);
 void can_enable(void);
 void can_disable(void);
 void can_set_bitrate(enum can_bitrate bitrate);
 void can_set_silent(uint8_t silent);
+void can_read_conf(void);
 uint32_t can_tx(CAN_TxHeaderTypeDef *tx_header, uint8_t (&buf)[CAN_MTU]);
 //uint32_t can_tx(CAN_TxHeaderTypeDef *tx_header,uint8_t aData[]);
 uint32_t can_rx(CAN_RxHeaderTypeDef *rx_header, uint8_t (&buf)[CAN_MTU]);
