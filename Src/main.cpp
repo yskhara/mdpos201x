@@ -192,7 +192,8 @@ int main(void)
     //LL_TIM_EnableAllOutputs(TIM1);
 
     can_enable();
-    can_set_filter(0x04b4, 0x07fc);
+    //can_set_filter(0x04b4, 0x07fc);
+    can_set_filter(confStruct.can_id_cmd, 0x07fc);
 
     if (conf_diag_uart)
     {
