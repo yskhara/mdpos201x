@@ -274,7 +274,8 @@ int main(void)
 
             tx_header.IDE = CAN_ID_STD;
             tx_header.RTR = CAN_RTR_DATA;
-            tx_header.StdId = confStruct.can_id_stat;
+            tx_header.StdId = can_id_stat;        //confStruct.can_id_stat;
+
             tx_header.DLC = 1;
 
             can_pack(tx_payload, static_cast<uint8_t>(control.GetStatusCode()));

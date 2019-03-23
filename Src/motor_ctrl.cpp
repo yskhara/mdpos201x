@@ -55,6 +55,8 @@ void MotorCtrl::Control(void)
     }
 
 // limit target velocity
+    // it would be nice if you could specify this separately
+    // TODO: make feed-rate variable
     if (MaximumVelocity < tmp_vel)
     {
         this->target_velocity = MaximumVelocity;
