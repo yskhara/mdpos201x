@@ -133,8 +133,8 @@ void uart::process(void)
         else
         {
             confStruct.can_id_cmd = base_id;
-            //confStruct.can_id_vel = base_id + 1;
-            //confStruct.can_id_stat = base_id + 3;
+            confStruct.can_id_vel = base_id + 1;
+            confStruct.can_id_stat = base_id + 3;
             // well, base+2 is currently reserved for "future use." what a waste, eh?
         }
 
@@ -366,22 +366,22 @@ void uart::process(void)
         // get maximum velocity
         uart::dump_value("Vsup", "V", control.GetSupplyVoltage());
     }/*
-     else if (strcmp(cmd, "CBNK") == 0)
-     {
-     // change bank
-     uint8_t bank_num = payload;
+    else if (strcmp(cmd, "CBNK") == 0)
+    {
+        // change bank
+        uint8_t bank_num = payload;
 
-     if (bank_num < 0 || NUM_OF_BANKS <= bank_num)
-     {
-     return;
-     }
-     conf_change_bank(bank_num);
-     //readConf();
-     control.ReadConfig();
+        if (bank_num < 0 || NUM_OF_BANKS <= bank_num)
+        {
+            return;
+        }
+        conf_change_bank(bank_num);
+        //readConf();
+        control.ReadConfig();
 
-     int ret = sprintf(tx_buf, "--> Changed to bank %d\r\n", bank_num);
-     serial.write((const uint8_t *) tx_buf, ret);
-     }*/
+        int ret = sprintf(tx_buf, "--> Changed to bank %d\r\n", bank_num);
+        serial.write((const uint8_t *) tx_buf, ret);
+    }*/
     else if (strcmp(cmd, "WCFG") == 0)
     {
         control.WriteConfig();
@@ -451,7 +451,6 @@ void uart::dump_can_id(bool set)
         fmt = "--> Current CAN ID (cmd): 0x%x\r\n--> Current CAN ID (vel): 0x%x\r\n--> Current CAN ID (stat): 0x%x\r\n";
     }
 
-    //int ret = sprintf(tx_buf, fmt, getConf()->can_id_cmd, getConf()->can_id_vel, getConf()->can_id_stat);
-    int ret = sprintf(tx_buf, fmt, getConf()->can_id_cmd, getConf()->can_id_cmd + 1, getConf()->can_id_cmd + 3);
+    int ret = sprintf(tx_buf, fmt, getConf()->can_id_cmd, getConf()->can_id_vel, getConf()->can_id_stat);
     serial.write((const uint8_t *) tx_buf, ret);
 }

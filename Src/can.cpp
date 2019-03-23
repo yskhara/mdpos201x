@@ -31,11 +31,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
 
     /*
-     if ((rx_header.IDE != 0) || (rx_header.RTR != 0))
-     {
-     return;
-     }
-     */
+    if ((rx_header.IDE != 0) || (rx_header.RTR != 0))
+    {
+        return;
+    }
+    */
 
     if ((rx_header.StdId == can_id_cmd) && (rx_header.DLC == 1))
     {
@@ -76,14 +76,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     led::process();
 }
 /*
- void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
- {
- if ((hcan->ErrorCode & HAL_CAN_ERROR_BOF) != 0)
- {
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+    if ((hcan->ErrorCode & HAL_CAN_ERROR_BOF) != 0)
+    {
 
- }
- }
- */
+    }
+}
+*/
 
 void can_init(void)
 {
@@ -101,25 +101,25 @@ void can_init(void)
 void can_read_conf(void)
 {
     can_id_cmd = confStruct.can_id_cmd;
-    can_id_vel = can_id_cmd + 1;    //confStruct.can_id_vel;
-    can_id_stat = can_id_cmd + 3;    //confStruct.can_id_stat;
+    can_id_vel = confStruct.can_id_vel;
+    can_id_stat = confStruct.can_id_stat;
 }
 
 void can_set_filter(uint32_t id, uint32_t mask)
 {
-// see page 825 of RM0091 for details on filters
-// set the standard ID part
+    // see page 825 of RM0091 for details on filters
+    // set the standard ID part
     filter.FilterIdHigh = (id & 0x7FF) << 5;
-// add the top 5 bits of the extended ID
+    // add the top 5 bits of the extended ID
     filter.FilterIdHigh += (id >> 24) & 0xFFFF;
-// set the low part to the remaining extended ID bits
+    // set the low part to the remaining extended ID bits
     filter.FilterIdLow += ((id & 0x1FFFF800) << 3);
 
-// set the standard ID part
+    // set the standard ID part
     filter.FilterMaskIdHigh = (mask & 0x7FF) << 5;
-// add the top 5 bits of the extended ID
+    // add the top 5 bits of the extended ID
     filter.FilterMaskIdHigh += (mask >> 24) & 0xFFFF;
-// set the low part to the remaining extended ID bits
+    // set the low part to the remaining extended ID bits
     filter.FilterMaskIdLow += ((mask & 0x1FFFF800) << 3);
 
     filter.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -243,13 +243,13 @@ uint32_t can_tx(CAN_TxHeaderTypeDef *tx_header, uint8_t (&buf)[CAN_MTU])
 {
     uint32_t status;
 
-// transmit can frame
-//hcan.pTxMsg = tx_msg;
-//status = HAL_CAN_Transmit(&hcan, timeout);
+    // transmit can frame
+    //hcan.pTxMsg = tx_msg;
+    //status = HAL_CAN_Transmit(&hcan, timeout);
     uint32_t tx_mailbox;
     status = HAL_CAN_AddTxMessage(&hcan, tx_header, buf, &tx_mailbox);
 
-//led::turn_on_can_led();
+    //led::turn_on_can_led();
     return status;
 }
 
@@ -257,12 +257,12 @@ uint32_t can_rx(CAN_RxHeaderTypeDef *rx_header, uint8_t (&buf)[CAN_MTU])
 {
     uint32_t status;
 
-//hcan.pRxMsg = rx_msg;
-//status = HAL_CAN_Receive(&hcan, CAN_FIFO0, timeout);
+    //hcan.pRxMsg = rx_msg;
+    //status = HAL_CAN_Receive(&hcan, CAN_FIFO0, timeout);
 
     status = HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, rx_header, buf);
 
-//led::turn_on_can_led();
+    //led::turn_on_can_led();
     return status;
 }
 

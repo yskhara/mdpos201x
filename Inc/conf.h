@@ -15,18 +15,18 @@ extern "C"
     typedef struct
     {
         uint16_t can_id_cmd;
-        //uint16_t can_id_vel;
-        //uint16_t can_id_stat;
-        float Kp;
-        float Ki;
-        float Ke;
-        float Kg;
-        float Ppr;
-        float Kr;
-        float MaxVel;
-        float MaxTrq;
-        float Vsup;
-        float HomVel;
+        uint16_t can_id_vel;
+        uint16_t can_id_stat;
+        double Kp;
+        double Ki;
+        double Ke;
+        double Kg;
+        double Ppr;
+        double Kr;
+        double MaxVel;
+        double MaxTrq;
+        double Vsup;
+        double HomVel;
     } ConfStruct;
 }
 
