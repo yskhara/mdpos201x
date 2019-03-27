@@ -156,17 +156,17 @@ private:
     Float_Type Kr = 1.0;                                // 入力である速度指令を，[rad]に変換する係数．
                                                     // degで指令するなら， M_PI/180．rad/secで指令するなら 1．
 
-    Float_Type Ki = 0;
+    //Float_Type Ki = 0;
     Float_Type Kp = 0;                                  // 比例ゲイン
     Float_Type KiTc = 0;                                // 積分ゲインと制御周期の積
     Float_Type Tc = 0.001;                              // 制御周期 [sec]
 
-    Float_Type Kv = 40;                                  // 位置偏差比例ゲイン
+    Float_Type Kv = 15;                                  // 位置偏差比例ゲイン
                                                       // 775, 385では40にした．
                                                         // 380では20にしてみたけど，もう少し低くても良さそう．
 
-    Float_Type Ppr = 2000;
-    Float_Type Kh = 2 * M_PI / (Ppr * Tc);             // エンコーダ入力[pulse/ctrl]を[rad/s]に変換する係数．kg / Tc．
+    //Float_Type Ppr = 2000;
+    Float_Type Kh = 2 * M_PI / (2000 * Tc);             // エンコーダ入力[pulse/ctrl]を[rad/s]に変換する係数．kg / Tc．
 
     //double Ra = 0.1384615;                          // 巻線抵抗 [Ohm]
     //double Kt = 0.0083762 * 24;                     // トルク定数 [N.m/A]
@@ -210,14 +210,13 @@ public:
         if (ki < 0)
             return -1;
 
-        this->Ki = ki;
         this->KiTc = ki * Tc;
         return 0;
     }
 
     inline Float_Type GetKi(void)
     {
-        return this->Ki;
+        return this->KiTc / Tc;
     }
 
     // emf constant
@@ -256,7 +255,6 @@ public:
         //if (ppr < 0)
         //    return -1;
 
-        this->Ppr = ppr;
         this->Kh = 2 * M_PI / (ppr * Tc);
 
         // TODO: make MaximumPosition_pulse configurable
@@ -266,8 +264,7 @@ public:
 
     inline Float_Type GetPPR(void)
     {
-        return this->Ppr;
-        //return 2 * M_PI / (this->Kh * Tc);
+        return 2 * M_PI / (this->Kh * Tc);
     }
 
     // coefficient: (unit of reference) -> [rad/s]

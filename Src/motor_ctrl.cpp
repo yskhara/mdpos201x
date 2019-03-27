@@ -224,10 +224,10 @@ void MotorCtrl::Print(void)
 void MotorCtrl::ReadConfig(void)
 {
     this->Kp = confStruct.Kp;
-    this->SetKi(confStruct.Ki);
+    this->KiTc = confStruct.KiTc;
     this->Ke = confStruct.Ke;
     this->Kg = confStruct.Kg;
-    this->SetPPR(confStruct.Ppr);
+    this->Kh = confStruct.Kh;
     this->Kr = confStruct.Kr;
     this->MaximumVelocity = confStruct.MaxVel;
     this->HomingVelocity = confStruct.HomVel;
@@ -238,10 +238,10 @@ void MotorCtrl::ReadConfig(void)
 void MotorCtrl::WriteConfig(void)
 {
     confStruct.Kp = this->Kp;
-    confStruct.Ki = this->Ki;
+    confStruct.KiTc = this->KiTc;
     confStruct.Ke = this->Ke;
     confStruct.Kg = this->Kg;
-    confStruct.Ppr = this->Ppr;
+    confStruct.Kh = this->Kh;
     confStruct.Kr = this->Kr;
     confStruct.MaxVel = this->MaximumVelocity;
     confStruct.HomVel = this->HomingVelocity;

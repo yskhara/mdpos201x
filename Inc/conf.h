@@ -18,10 +18,10 @@ extern "C"
         uint16_t can_id_vel;
         uint16_t can_id_stat;
         double Kp;
-        double Ki;
+        double KiTc;
         double Ke;
         double Kg;
-        double Ppr;
+        double Kh;
         double Kr;
         double MaxVel;
         double MaxTrq;
