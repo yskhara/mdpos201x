@@ -365,6 +365,26 @@ void uart::process(void)
     {
         // get maximum velocity
         uart::dump_value("Vsup", "V", control.GetSupplyVoltage());
+    }
+    else if (strcmp(cmd, "SKVP") == 0)
+    {
+        // set kv
+        int ret = control.SetKv(payload);
+        const char * name = "Kv";
+
+        if (ret != 0)
+        {
+            uart::invalid_value(name, payload);
+        }
+        else
+        {
+            uart::valid_value_set(name, "(rad/s)/rad", payload);
+        }
+    }
+    else if (strcmp(cmd, "GKVP") == 0)
+    {
+        // get kv
+        uart::dump_value("Kv", "(rad/s)/rad", control.GetKv());
     }/*
     else if (strcmp(cmd, "CBNK") == 0)
     {

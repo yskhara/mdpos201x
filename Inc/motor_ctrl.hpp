@@ -161,7 +161,7 @@ private:
     Float_Type KiTc = 0;                                // 積分ゲインと制御周期の積
     Float_Type Tc = 0.001;                              // 制御周期 [sec]
 
-    Float_Type Kv = 15;                                  // 位置偏差比例ゲイン
+    Float_Type Kv = 20;                                  // 位置偏差比例ゲイン
                                                       // 775, 385では40にした．
                                                         // 380では20にしてみたけど，もう少し低くても良さそう．
 
@@ -281,6 +281,22 @@ public:
     inline Float_Type GetKr(void)
     {
         return this->Kr;
+    }
+
+    // coefficient: (position error [rad]) -> (target velocity [rad/s])
+    inline int SetKv(Float_Type kv)
+    {
+        // Kv is NOT allowed to be negative value.
+        if (kv < 0)
+            return -1;
+
+        this->Kv = kv;
+        return 0;
+    }
+
+    inline Float_Type GetKv(void)
+    {
+        return this->Kv;
     }
 
     inline int SetMaximumVelocity(Float_Type om)

@@ -27,6 +27,8 @@ extern "C"
         double MaxTrq;
         double Vsup;
         double HomVel;
+        double MaxTravel;
+        double Kv;
     } ConfStruct;
 }
 

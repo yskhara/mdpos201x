@@ -229,6 +229,7 @@ void MotorCtrl::ReadConfig(void)
     this->Kg = confStruct.Kg;
     this->Kh = confStruct.Kh;
     this->Kr = confStruct.Kr;
+    this->Kv = confStruct.Kv;
     this->MaximumVelocity = confStruct.MaxVel;
     this->HomingVelocity = confStruct.HomVel;
     this->MaximumTorque = confStruct.MaxTrq;
@@ -243,6 +244,7 @@ void MotorCtrl::WriteConfig(void)
     confStruct.Kg = this->Kg;
     confStruct.Kh = this->Kh;
     confStruct.Kr = this->Kr;
+    confStruct.Kv = this->Kv;
     confStruct.MaxVel = this->MaximumVelocity;
     confStruct.HomVel = this->HomingVelocity;
     confStruct.MaxTrq = this->MaximumTorque;
