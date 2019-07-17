@@ -26,6 +26,9 @@ extern "C"
         double MaxVel;
         double MaxTrq;
         double Vsup;
+        double HomVel;
+        double MaxTravel;
+        double Kv;
     } ConfStruct;
 }
 
@@ -33,5 +36,10 @@ extern ConfStruct confStruct;
 
 void readConf(void);
 void writeConf(void);
+
+inline ConfStruct * getConf(void)
+{
+    return &confStruct;
+}
 
 #endif /* CONF_H_ */

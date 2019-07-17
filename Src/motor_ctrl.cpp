@@ -30,8 +30,8 @@ void MotorCtrl::Control(void)
         TIM1->CCR2 = 0;
 
         // turn red led on, yellow off
-        GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
-        GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
+        //GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
+        //GPIO_LED2->BSRR = GPIO_BSRR_BS_LED2;
 
         this->ResetState();
 
@@ -40,10 +40,10 @@ void MotorCtrl::Control(void)
 
     // flash yellow led, red off
     GPIO_LED1->BSRR = GPIO_BSRR_BS_LED1;
-    GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
+    //GPIO_LED2->BSRR = GPIO_BSRR_BR_LED2;
 
 #ifdef CTRL_POS
-    double tmp_vel;
+    Float_Type tmp_vel;
 
     if (this->homing)
     {
@@ -106,10 +106,12 @@ void MotorCtrl::Control(void)
     GPIO_LED1->BSRR = GPIO_BSRR_BR_LED1;
 }
 
-void MotorCtrl::SetTarget(double target)
+void MotorCtrl::SetTarget(Float_Type target)
 {
 #ifdef CTRL_POS
     int tmp = (target * Kr / (Kh * Tc)) + 0.5;
+
+#ifdef LIMIT_POS
 
     if (MaximumPosition_pulse < tmp)
     {
@@ -121,8 +123,11 @@ void MotorCtrl::SetTarget(double target)
     }
     else
     {
-        this->target_position_pulse = tmp;
-    }
+#endif
+    this->target_position_pulse = tmp;
+#ifdef LIMIT_POS
+}
+#endif
 #else
     double tmp = target * Kr;
 
@@ -142,7 +147,7 @@ void MotorCtrl::SetTarget(double target)
 }
 
 #ifdef CTRL_POS
-void MotorCtrl::ResetPosition(double offset)
+void MotorCtrl::ResetPosition(Float_Type offset)
 {
     if (!this->shutdown)
     {
@@ -153,10 +158,9 @@ void MotorCtrl::ResetPosition(double offset)
     this->target_position_pulse = this->current_position_pulse;
 }
 
-
 void MotorCtrl::LimitSwitch0Handler(void)
 {
-    if(!this->homing)
+    if (!this->homing)
     {
         return;
     }
@@ -167,7 +171,7 @@ void MotorCtrl::LimitSwitch0Handler(void)
 
 void MotorCtrl::LimitSwitch1Handler(void)
 {
-    if(!this->homing)
+    if (!this->homing)
     {
         return;
     }
@@ -178,20 +182,23 @@ void MotorCtrl::LimitSwitch1Handler(void)
 
 void MotorCtrl::Home(void)
 {
-    if(!this->shutdown)
+    if (!this->shutdown)
     {
         return;
     }
 
-    if(((GPIO_DIN0->IDR & GPIO_IDR_DIN0) == 0))// || ((GPIO_DIN1->IDR & GPIO_IDR_DIN1) == 0))
+    if (((GPIO_DIN0->IDR & GPIO_IDR_DIN0) == 0))    // || ((GPIO_DIN1->IDR & GPIO_IDR_DIN1) == 0))
     {
         this->Shutdown();
         this->ResetPosition();
+        this->homing = false;
         return;
     }
 
     this->homing = true;
-    this->Recover();
+    this->_recover();
+
+    led::mode = led::lighting_mode::error_0;
 }
 
 #endif
@@ -201,13 +208,14 @@ void MotorCtrl::Print(void)
     char buf[128];
     int ret;
 #ifdef CTRL_POS
-    ret = sprintf(buf, "%06lu,%+03d,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
-            this->current_position_pulse, this->target_position_pulse, this->velocity, this->target_velocity, this->error,
-            this->error_prev, this->u_p, this->u_i, this->target_torque, this->target_voltage);
+    ret = sprintf(buf, "%06lu,%+03d,%+03d,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f\r\n", HAL_GetTick(),
+            this->current_position_pulse, this->target_position_pulse, (float) this->velocity, (float) this->target_velocity,
+            (float) this->error, (float) this->error_prev, (float) this->u_p, (float) this->u_i, (float) this->target_torque,
+            (float) this->target_voltage);
 #else
-    ret = sprintf(buf, "%06lu,%+03d,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf,%+3.3lf\r\n", HAL_GetTick(),
-            this->pulse, this->velocity, this->target_velocity, this->error, this->error_prev, this->u_p, this->u_i,
-            this->target_torque, this->target_voltage);
+    ret = sprintf(buf, "%06lu,%+03d,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f,%+3.3f\r\n", HAL_GetTick(), this->pulse,
+            (float) this->velocity, (float) this->target_velocity, (float) this->error, (float) this->error_prev,
+            (float) this->u_p, (float) this->u_i, (float) this->target_torque, (float) this->target_voltage);
 #endif
 
     if (ret < 0)
@@ -226,7 +234,9 @@ void MotorCtrl::ReadConfig(void)
     this->Kg = confStruct.Kg;
     this->Kh = confStruct.Kh;
     this->Kr = confStruct.Kr;
+    this->Kv = confStruct.Kv;
     this->MaximumVelocity = confStruct.MaxVel;
+    this->HomingVelocity = confStruct.HomVel;
     this->MaximumTorque = confStruct.MaxTrq;
     this->SetSupplyVoltage(confStruct.Vsup);
 }
@@ -239,7 +249,9 @@ void MotorCtrl::WriteConfig(void)
     confStruct.Kg = this->Kg;
     confStruct.Kh = this->Kh;
     confStruct.Kr = this->Kr;
+    confStruct.Kv = this->Kv;
     confStruct.MaxVel = this->MaximumVelocity;
+    confStruct.HomVel = this->HomingVelocity;
     confStruct.MaxTrq = this->MaximumTorque;
     confStruct.Vsup = this->SupplyVoltage;
 }

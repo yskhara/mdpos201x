@@ -5,6 +5,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include <led.hpp>
 #include <cmath>
 
 #include "motor_ctrl.hpp"
@@ -13,8 +14,6 @@
 #include "main.h"
 
 #include "can.hpp"
-#include "led.h"
-
 #include "SerialClass.hpp"
 #include "uart_com.hpp"
 
@@ -62,11 +61,11 @@ extern SerialClass serial;
 
 //#define SQUARE_TEST
 
-//#define BROADCAST_EMS
+#define BROADCAST_STAT
 
-// if conf0 pin is high on boot, diagnostic info is available on UART.
+// if conf0 pin is low on boot, diagnostic info is available on UART.
 bool conf_diag_uart = false;
-// if conf1 pin is high on boot, diagnostic info is available on CAN.
+// if conf1 pin is low on boot, diagnostic info is available on CAN.
 bool conf_diag_can = false;
 bool conf2 = false;
 bool conf3 = false;
@@ -131,6 +130,10 @@ int main(void)
 
     readPinConf();
 
+    readConf();
+    control.ReadConfig();
+    can_read_conf();
+
     //LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_2);
     //LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_3);
 
@@ -146,7 +149,7 @@ int main(void)
 
     const char * buf = nullptr;
 
-    if (conf_diag_uart)
+    if (!conf_diag_uart)
     {
 #ifdef CTRL_POS
         buf = "MDPOS201x BETA Position Control by yskhara.\r\nInitializing...";
@@ -171,9 +174,6 @@ int main(void)
     // enable tim2 for encoder input
     LL_TIM_EnableCounter(TIM2);
 
-    readConf();
-    control.ReadConfig();
-
     // enable tim3 for control interrupt
     LL_TIM_EnableIT_UPDATE(TIM3);
     LL_TIM_EnableCounter(TIM3);
@@ -192,8 +192,10 @@ int main(void)
     //LL_TIM_EnableAllOutputs(TIM1);
 
     can_enable();
+    //can_set_filter(0x04b4, 0x07fc);
+    can_set_filter(confStruct.can_id_cmd, 0x07fc);
 
-    if (!conf_diag_uart)
+    if (conf_diag_uart)
     {
 #ifdef CTRL_POS
         buf = "time [ms], cur_pos_pul, tgt_pos_pul, vel_cur, vel_tgt, err, err_prev, u_p, u_i, trq_tgt, volt_tgt\r\n";
@@ -206,12 +208,12 @@ int main(void)
     {
         buf = "done.\r\n";
         serial.write((const uint8_t *) buf, strlen(buf));
-        uart_prompt();
+        uart::prompt();
     }
 
-#ifdef BROADCAST_EMS
+#ifdef BROADCAST_STAT
     uint32_t last_stat_time = HAL_GetTick();
-    uint32_t stat_interval = 100;
+    uint32_t stat_interval = 200;
 #endif
 
 #ifdef SQUARE_TEST
@@ -250,41 +252,50 @@ int main(void)
 
 #ifndef SQUARE_TEST
 
-#ifdef BROADCAST_EMS
-        if(HAL_GetTick() - last_stat_time > stat_interval)
+#ifdef BROADCAST_STAT
+        if (HAL_GetTick() - last_stat_time > stat_interval)
         {
-            uint16_t data = 0xaabb;
+            //uint16_t data = 0xaabb;
 
             /*
-            if((GPIOC->IDR & GPIO_IDR_IDR14) != 0)
-            {
-                data = 0x0001;
-                //GPIOB->BSRR = GPIO_BSRR_BS2;
-            }
-            else
-            {
-                //GPIOB->BSRR = GPIO_BSRR_BR2;
-            }
-            */
+             if((GPIOC->IDR & GPIO_IDR_IDR14) != 0)
+             {
+             data = 0x0001;
+             //GPIOB->BSRR = GPIO_BSRR_BS2;
+             }
+             else
+             {
+             //GPIOB->BSRR = GPIO_BSRR_BR2;
+             }
+             */
 
             CAN_TxHeaderTypeDef tx_header;
             uint8_t tx_payload[CAN_MTU];
-            uint32_t status;
+            //uint32_t status;
 
             tx_header.IDE = CAN_ID_STD;
             tx_header.RTR = CAN_RTR_DATA;
-            tx_header.StdId = 0x4a0;
-            tx_header.DLC = 2;
+            tx_header.StdId = confStruct.can_id_stat;
+            tx_header.DLC = 1;
 
-            can_pack(tx_payload, data);
+            can_pack(tx_payload, static_cast<uint8_t>(control.GetStatusCode()));
 
             can_tx(&tx_header, tx_payload);
 
             last_stat_time = HAL_GetTick();
         }
 #endif
-        uart_process();
-        led_process();
+
+        if (conf_diag_uart)
+        {
+            HAL_Delay(1);
+            control.Print();
+        }
+        else
+        {
+            uart::process();
+        }
+        led::process();
         //HAL_Delay(1);
 
         continue;
@@ -605,7 +616,8 @@ static void MX_TIM1_Init(void)
     TIM_BDTRInitStruct.OSSRState = LL_TIM_OSSR_DISABLE;
     TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_ENABLE;
     TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
-    TIM_BDTRInitStruct.DeadTime = 14;
+    TIM_BDTRInitStruct.DeadTime = 22;//14; 24th, Mayに焼け死にまくったのを受けてデッド・タイムを若干長くする
+    // 実演用：22，短め
     TIM_BDTRInitStruct.BreakState = LL_TIM_BREAK_DISABLE;
     TIM_BDTRInitStruct.BreakPolarity = LL_TIM_BREAK_POLARITY_HIGH;
     TIM_BDTRInitStruct.AutomaticOutput = LL_TIM_AUTOMATICOUTPUT_DISABLE;
