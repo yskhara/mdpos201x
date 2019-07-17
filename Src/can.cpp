@@ -43,9 +43,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             case cmd_recover:
                 control.Recover();
                 break;
+#ifdef CTRL_POS
             case cmd_home:
                 control.Home();
                 break;
+#endif
             default:
                 break;
         }

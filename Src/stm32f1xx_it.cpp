@@ -233,7 +233,9 @@ extern "C"
         {
             LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_2);
 
+#ifdef CTRL_POS
             control.LimitSwitch0Handler();
+#endif
         }
     }
 
@@ -246,7 +248,9 @@ extern "C"
         {
             LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
 
+#ifdef CTRL_POS
             control.LimitSwitch1Handler();
+#endif
         }
     }
 
