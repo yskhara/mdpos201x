@@ -29,6 +29,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         // or raise an error
         return;
     }
+    //led::turn_on_can_led();
 
     /*
     if ((rx_header.IDE != 0) || (rx_header.RTR != 0))
@@ -50,9 +51,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             case cmd_recover:
                 control.Recover();
                 break;
+#ifdef CTRL_POS
             case cmd_home:
                 control.Home();
                 break;
+#endif
             default:
                 break;
         }

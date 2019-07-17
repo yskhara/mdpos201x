@@ -111,6 +111,8 @@ void MotorCtrl::SetTarget(Float_Type target)
 #ifdef CTRL_POS
     int tmp = (target * Kr / (Kh * Tc)) + 0.5;
 
+#ifdef LIMIT_POS
+
     if (MaximumPosition_pulse < tmp)
     {
         this->target_position_pulse = MaximumPosition_pulse;
@@ -121,8 +123,11 @@ void MotorCtrl::SetTarget(Float_Type target)
     }
     else
     {
-        this->target_position_pulse = tmp;
-    }
+#endif
+    this->target_position_pulse = tmp;
+#ifdef LIMIT_POS
+}
+#endif
 #else
     double tmp = target * Kr;
 
