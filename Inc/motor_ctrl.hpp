@@ -85,8 +85,8 @@ public:
 
 private:
 
-    uint16_t ccr_arr = 720 - 1;
-    uint16_t ccr_max = 685 - 1;
+    uint16_t ccr_arr = 1440 - 1;
+    uint16_t ccr_max = 1400 - 1;
 
     // @param d duty ratio multiplied by 1000, where 1000 represents 100% duty ratio.
     inline void SetDuty(int d)

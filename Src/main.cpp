@@ -589,7 +589,7 @@ static void MX_TIM1_Init(void)
 
     TIM_InitStruct.Prescaler = 0;
     TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-    TIM_InitStruct.Autoreload = 720 - 1;
+    TIM_InitStruct.Autoreload = 1440 - 1;//50khz;
     TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
     TIM_InitStruct.RepetitionCounter = 0;
     LL_TIM_Init(TIM1, &TIM_InitStruct);
@@ -616,7 +616,7 @@ static void MX_TIM1_Init(void)
     TIM_BDTRInitStruct.OSSRState = LL_TIM_OSSR_DISABLE;
     TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_ENABLE;
     TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
-    TIM_BDTRInitStruct.DeadTime = 22;//14; 24th, Mayに焼け死にまくったのを受けてデッド・タイムを若干長くする
+    TIM_BDTRInitStruct.DeadTime = 26;//14; 24th, Mayに焼け死にまくったのを受けてデッド・タイムを若干長くする
     // 実演用：22，短め
     TIM_BDTRInitStruct.BreakState = LL_TIM_BREAK_DISABLE;
     TIM_BDTRInitStruct.BreakPolarity = LL_TIM_BREAK_POLARITY_HIGH;
