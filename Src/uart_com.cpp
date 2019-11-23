@@ -418,7 +418,26 @@ void uart::process(void)
         const char * msg = "read from flash\r\n";
         serial.write((const uint8_t *) msg, strlen(msg));
     }
-
+    else if (strcmp(cmd, "SENV") == 0)
+    {
+    	const char * msg;
+        if(payload==1.0){
+        	control.Recover();
+        	msg = "enable\r\n";
+        }
+        else{
+        	control.Shutdown();
+        	msg = "disable\r\n";
+        }
+        serial.write((const uint8_t *) msg, strlen(msg));
+    }
+    else if (strcmp(cmd, "SVTG") == 0)
+    {
+        control.Recover();
+        control.SetTarget(payload);
+        const char * msg = "set velocity target\r\n";
+        serial.write((const uint8_t *) msg, strlen(msg));
+    }
     uart::prompt();
 }
 
