@@ -176,7 +176,7 @@ private:
     Float_Type Kg = 0.1384615 / (0.0083762 * 24);       // トルクから電圧への係数．定義は 巻線抵抗 / トルク定数．
     //double Kg = 0.1384615 / (0.0083762 * 61);       // トルクから電圧への係数．定義は 巻線抵抗 / トルク定数．
 
-    Float_Type MaximumPosition_pulse = 20 * M_PI / (Kh * Tc);   // 回転角制限 [pulse]
+    int MaximumPosition_pulse = 20 * M_PI / (Kh * Tc);   // 回転角制限 [pulse]
     Float_Type MaximumVelocity = 100;                   // 回転数制限 [rad/s]
     Float_Type MaximumTorque = 10 * (0.0083762 * 24);    // 吐ける電流量を基準に，トルク制限を定める．
                                                      //電気ではなく機械を基準にしてもよかろう．

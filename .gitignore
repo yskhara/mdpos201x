@@ -1,1 +1,14 @@
 /Debug/*
+/Debug/
+/Release/
+/.settings/
+/.code_review_properties
+/.cproject
+/.mxproject
+/.project
+/mdpos201x.elf.launch
+/parser.log
+/parser_c.log
+/parser_cpp.log
+!/Debug/mdpos201x.*
+

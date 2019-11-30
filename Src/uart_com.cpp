@@ -418,6 +418,7 @@ void uart::process(void)
         const char * msg = "read from flash\r\n";
         serial.write((const uint8_t *) msg, strlen(msg));
     }
+<<<<<<< HEAD
     else if (strcmp(cmd, "SENV") == 0)
     {
     	const char * msg;
@@ -438,6 +439,9 @@ void uart::process(void)
         const char * msg = "set velocity target\r\n";
         serial.write((const uint8_t *) msg, strlen(msg));
     }
+=======
+
+>>>>>>> refs/heads/master
     uart::prompt();
 }
 
