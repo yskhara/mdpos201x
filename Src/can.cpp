@@ -148,11 +148,7 @@ void can_enable(void)
         hcan.Init.TimeSeg1 = CAN_BS1_4TQ;
         hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
         hcan.Init.TimeTriggeredMode = DISABLE;
-<<<<<<< HEAD
         hcan.Init.AutoBusOff = DISABLE;
-=======
-        hcan.Init.AutoBusOff = ENABLE;
->>>>>>> refs/heads/master
         hcan.Init.AutoWakeUp = DISABLE;
         hcan.Init.AutoRetransmission = ENABLE;
         hcan.Init.ReceiveFifoLocked = DISABLE;

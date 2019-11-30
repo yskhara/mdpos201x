@@ -589,7 +589,6 @@ static void MX_TIM1_Init(void)
 
     TIM_InitStruct.Prescaler = 0;
     TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-<<<<<<< HEAD
     TIM_InitStruct.Autoreload = 1440 - 1;//50khz;
     TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
     TIM_InitStruct.RepetitionCounter = 0;
@@ -618,36 +617,6 @@ static void MX_TIM1_Init(void)
     TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_ENABLE;
     TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
     TIM_BDTRInitStruct.DeadTime = 26;//14; 24th, Mayに焼け死にまくったのを受けてデッド・タイムを若干長くする
-=======
-    TIM_InitStruct.Autoreload = 720 - 1;
-    TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-    TIM_InitStruct.RepetitionCounter = 0;
-    LL_TIM_Init(TIM1, &TIM_InitStruct);
-    LL_TIM_DisableARRPreload(TIM1);
-    LL_TIM_SetClockSource(TIM1, LL_TIM_CLOCKSOURCE_INTERNAL);
-    LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH1);
-    TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
-    TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-    TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-    TIM_OC_InitStruct.CompareValue = 0;
-    TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
-    TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
-    TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
-    TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
-    LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
-    LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
-    LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH2);
-    TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-    TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-    LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH2, &TIM_OC_InitStruct);
-    LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH2);
-    LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_RESET);
-    LL_TIM_DisableMasterSlaveMode(TIM1);
-    TIM_BDTRInitStruct.OSSRState = LL_TIM_OSSR_DISABLE;
-    TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_ENABLE;
-    TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
-    TIM_BDTRInitStruct.DeadTime = 22;//14; 24th, Mayに焼け死にまくったのを受けてデッド・タイムを若干長くする
->>>>>>> refs/heads/master
     // 実演用：22，短め
     TIM_BDTRInitStruct.BreakState = LL_TIM_BREAK_DISABLE;
     TIM_BDTRInitStruct.BreakPolarity = LL_TIM_BREAK_POLARITY_HIGH;
