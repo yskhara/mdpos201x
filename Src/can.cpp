@@ -16,6 +16,7 @@ uint8_t rx_data[8];
 static constexpr uint8_t cmd_shutdown = 0x00;
 static constexpr uint8_t cmd_recover = 0x01;
 static constexpr uint8_t cmd_home = 0x10;
+static constexpr uint8_t get_status = 0x11;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -51,6 +52,22 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             case cmd_recover:
                 control.Recover();
                 break;
+#ifndef BROADCAST_STAT
+            case get_status:
+                CAN_TxHeaderTypeDef tx_header;
+                uint8_t tx_payload[CAN_MTU];
+                //uint32_t status;
+
+                tx_header.IDE = CAN_ID_STD;
+                tx_header.RTR = CAN_RTR_DATA;
+                tx_header.StdId = confStruct.can_id_stat;
+                tx_header.DLC = 1;
+
+                can_pack(tx_payload, static_cast<uint8_t>(control.GetStatusCode()));
+
+                can_tx(&tx_header, tx_payload);
+            	break;
+#endif
 #ifdef CTRL_POS
             case cmd_home:
                 control.Home();
@@ -145,8 +162,8 @@ void can_enable(void)
         hcan.Init.Prescaler = prescaler;
         hcan.Init.Mode = CAN_MODE_NORMAL;
         hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
-        hcan.Init.TimeSeg1 = CAN_BS1_4TQ;
-        hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
+        hcan.Init.TimeSeg1 = CAN_BS1_15TQ;
+        hcan.Init.TimeSeg2 = CAN_BS2_2TQ;
         hcan.Init.TimeTriggeredMode = DISABLE;
         hcan.Init.AutoBusOff = DISABLE;
         hcan.Init.AutoWakeUp = DISABLE;
@@ -208,19 +225,19 @@ void can_set_bitrate(enum can_bitrate bitrate)
             prescaler = 45;
             break;
         case CAN_BITRATE_125K:
-            prescaler = 36;
+            prescaler = 16;//36;
             break;
         case CAN_BITRATE_250K:
-            prescaler = 18;
+            prescaler = 8;//18;
             break;
         case CAN_BITRATE_500K:
-            prescaler = 9;
+            prescaler = 4;//9;
             break;
         case CAN_BITRATE_750K:
-            prescaler = 6;
+            prescaler = 3;//6;
             break;
         case CAN_BITRATE_1000K:
-            prescaler = 4;
+            prescaler = 2;//4;
             break;
     }
 }

@@ -431,12 +431,21 @@ void uart::process(void)
         }
         serial.write((const uint8_t *) msg, strlen(msg));
     }
+#ifdef CTRL_POS
+    else if (strcmp(cmd, "SPTG") == 0)
+    {
+        control.SetTarget(payload);
+        const char * msg = "set position target\r\n";
+        serial.write((const uint8_t *) msg, strlen(msg));
+    }
+#else
     else if (strcmp(cmd, "SVTG") == 0)
     {
         control.SetTarget(payload);
         const char * msg = "set velocity target\r\n";
         serial.write((const uint8_t *) msg, strlen(msg));
     }
+#endif
     uart::prompt();
 }
 

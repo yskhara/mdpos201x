@@ -16,6 +16,7 @@ void MotorCtrl::Control(void)
     // update current position
     this->current_position_pulse += pulse;
 #endif
+    this->velocity = pulse * Kh;
 
     if ((GPIO_EMS->IDR & GPIO_IDR_EMS) == 0)
     {
@@ -69,7 +70,7 @@ void MotorCtrl::Control(void)
     }
 #endif
 
-    this->velocity = pulse * Kh;
+
 
     this->error_prev = this->error;
     this->error = this->target_velocity - this->velocity;

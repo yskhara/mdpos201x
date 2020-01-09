@@ -117,8 +117,8 @@ private:
     {
         //TIM2->CNT = 0;
         //this->enc_cnt = 0;
-        this->pulse = 0;
-        this->velocity = 0;
+        //this->pulse = 0;
+        //this->velocity = 0;
         this->error = 0;
         this->error_prev = 0;
         this->u_p = 0;

@@ -61,7 +61,7 @@ extern SerialClass serial;
 
 //#define SQUARE_TEST
 
-#define BROADCAST_STAT
+//#define BROADCAST_STAT
 
 // if conf0 pin is low on boot, diagnostic info is available on UART.
 bool conf_diag_uart = false;
@@ -145,16 +145,16 @@ int main(void)
     serial.start_dma();
 
     can_init();
-    can_set_bitrate(CAN_BITRATE_500K);
+    can_set_bitrate(CAN_BITRATE_1000K);
 
     const char * buf = nullptr;
 
     if (!conf_diag_uart)
     {
 #ifdef CTRL_POS
-        buf = "MDPOS201x BETA Position Control by yskhara.\r\nInitializing...";
+        buf = "MDPOS201x BETA Position Control \r\nPWM_50K\r\nCAN_BITRATE_1000K \r\nInitializing...";
 #else
-        buf = "MDPOS201x BETA Velocity Control by yskhara.\r\nInitializing...";
+        buf = "MDPOS201x BETA Velocity Control \r\nPWM_50K\r\nCAN_BITRATE_1000K \r\nInitializing...";
 #endif
         serial.write((const uint8_t *) buf, strlen(buf));
     }
