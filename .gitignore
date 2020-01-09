@@ -1,3 +1,4 @@
+/Debug/*
 /Debug/
 /Release/
 /.settings/
@@ -11,3 +12,6 @@
 /parser_cpp.log
 !/Debug/mdpos201x.*
 
+/*.ioc
+/.project_org
+/.cproject_org

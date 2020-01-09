@@ -2,9 +2,35 @@
 　ブラシDCモータドライバmdpos201xのファームウェアです．速度制御または位置制御を行うことができます．
 　STマイクロエレクトロニクス社のLL/HALライブラリなどのIPを含みます．
 
-# コンパイル
-　インクルードディレクトリパスにInc/，Drivers/STM32F1xx_HAL_Driver/Inc/，Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/，Drivers/CMSIS/Device/ST/STM32F1xx/Include/，Drivers/CMSIS/Include/を，シンボルにUSE_FULL_LL_DRIVER，__weak="__attribute__((weak))"，__packed="__attribute__((__packed__))"，USE_HAL_DRIVER，STM32F103xBを指定する必要があります．
-　main.hppにてCTRL_POSマクロを有効にすると位置制御，CTRL_VELマクロを有効にすると速度制御のファームウェアになります．
+# 動作確認
+  releasesから.elfファイルを落としてくる
+  CubeProgrammerで書き込む
 
-# 設定
-　制御ゲインなど，いくつかのパラメータは
+  UARTで繋いでパラメータを設定する(以下は775,24:1の場合)
+  ```
+  SKPR 0.5
+  SKIT 20
+  SKEM 0.14
+  SKGT 0.69
+  SPPR 2000
+  SKRF 1.0
+  SMVL 100
+  SHVL 1.0
+  SMTQ 8.0
+  SVSP 20
+  SKVP 40
+  ```
+
+  mdに安定化電源,ESを繋ぐ
+
+  UARTで
+  ```
+  SENV 1
+  ```
+  でenableしたあと
+
+  ```
+  SVTG 50
+  ```
+
+  で速度指令ができる.
